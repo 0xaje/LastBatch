@@ -15,7 +15,6 @@ interface Totals {
   produced: number;
   replenished: number;
   wasted: number;
-  sold: number;
   wasteByReason: Record<string, number>;
 }
 
@@ -68,7 +67,7 @@ export default function HistoryPage() {
     for (const w of waste) {
       wasteByReason[w.reason] = (wasteByReason[w.reason] ?? 0) + Number(w.quantity);
     }
-    return { produced, replenished, wasted, sold: produced + replenished - wasted, wasteByReason };
+    return { produced, replenished, wasted, wasteByReason };
   }, [batches, replenishments, waste]);
 
   if (loading) return <PageLoader />;
@@ -86,7 +85,7 @@ export default function HistoryPage() {
         History & reports
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Everything here is calculated from real records — nothing estimated or hardcoded.
+        Every number here is summed directly from recorded production, replenishment and waste records for the selected period. Sales are not shown because quantity sold can only be known after a shift is counted and closed — see the shift closeouts for that.
       </Typography>
 
       <ToggleButtonGroup
@@ -106,7 +105,7 @@ export default function HistoryPage() {
         <ReportCard label="Produced" value={totals.produced} />
         <ReportCard label="Replenished" value={totals.replenished} />
         <ReportCard label="Wasted" value={totals.wasted} tone="error" />
-        <ReportCard label="Estimated sold" value={totals.sold} tone="success" />
+        <ReportCard label="Waste entries" value={waste.length} />
       </Box>
 
       {Object.keys(totals.wasteByReason).length > 0 && (

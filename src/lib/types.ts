@@ -136,4 +136,5 @@ export interface CountRow {
   expected: number;
   remaining: string;
   explanation: string;
+  inactive: boolean;
 }

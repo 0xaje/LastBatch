@@ -84,7 +84,7 @@ export default function ShiftPage() {
 
     const openedAt = new Date(openShift.opened_at).toISOString();
     const [itemsRes, batchesRes, replRes, wasteRes] = await Promise.all([
-      supabase.from('food_items').select('*').eq('is_active', true).order('name'),
+      supabase.from('food_items').select('*').order('name'),
       supabase.from('batches').select('item_id, quantity, produced_at').gte('produced_at', openedAt),
       supabase.from('replenishments').select('item_id, quantity, recorded_at').gte('recorded_at', openedAt),
       supabase.from('waste_events').select('item_id, quantity, wasted_at').gte('wasted_at', openedAt),
@@ -96,7 +96,7 @@ export default function ShiftPage() {
       return;
     }
 
-    const items = (itemsRes.data ?? []) as { id: string; name: string; unit: string }[];
+    const items = (itemsRes.data ?? []) as { id: string; name: string; unit: string; is_active: boolean }[];
     const producedMap = new Map<string, number>();
     for (const b of (batchesRes.data ?? []) as { item_id: string; quantity: number }[]) {
       producedMap.set(b.item_id, (producedMap.get(b.item_id) ?? 0) + Number(b.quantity));
@@ -110,7 +110,9 @@ export default function ShiftPage() {
       wasteMap.set(w.item_id, (wasteMap.get(w.item_id) ?? 0) + Number(w.quantity));
     }
 
-    const rows: CountRow[] = items.map((i) => {
+    const rows: CountRow[] = items
+      .filter((i) => i.is_active || (producedMap.get(i.id) ?? 0) > 0 || (replMap.get(i.id) ?? 0) > 0 || (wasteMap.get(i.id) ?? 0) > 0)
+      .map((i) => {
       const produced = producedMap.get(i.id) ?? 0;
       const replenished = replMap.get(i.id) ?? 0;
       const wasted = wasteMap.get(i.id) ?? 0;
@@ -124,6 +126,7 @@ export default function ShiftPage() {
         expected: produced + replenished - wasted,
         remaining: '',
         explanation: '',
+        inactive: !i.is_active,
       };
     });
     setCounts(rows);
@@ -277,9 +280,12 @@ export default function ShiftPage() {
             const diff = c.remaining === '' || !Number.isFinite(rem) ? null : c.expected - rem;
             return (
               <Box key={c.item_id} sx={{ mb: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                  {c.name}
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                  <Typography variant="subtitle2">
+                    {c.name}
+                  </Typography>
+                  {c.inactive && <Chip size="small" label="No longer on the menu" variant="outlined" />}
+                </Box>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
                   Produced {formatQty(c.produced)} · Replenished {formatQty(c.replenished)} · Wasted {formatQty(c.wasted)} — expected on hand: {formatQty(Math.max(c.expected, 0))} {c.unit}
                 </Typography>
@@ -366,7 +372,8 @@ function ShiftRow({ shift }: { shift: Shift }) {
   }, [expanded, closeouts, shift.id]);
 
   const diffs = closeouts?.filter((c) => c.difference !== 0).length ?? 0;
-  const totalSold = closeouts?.reduce((sum, c) => sum + Number(c.sold_estimate), 0) ?? 0;
+  const totalUnaccounted = closeouts?.reduce((sum, c) => sum + Number(c.sold_estimate), 0) ?? 0;
+  const fullyReconciled = closeouts !== null && diffs === 0;
 
   return (
     <ListItem
@@ -377,7 +384,7 @@ function ShiftRow({ shift }: { shift: Shift }) {
         primary={`Closed ${formatDateTime(shift.closed_at ?? shift.opened_at)}`}
         secondary={
           closeouts
-            ? `Estimated sold: ${formatQty(totalSold)} · ${diffs} unreconciled item(s)`
+            ? `Unaccounted for: ${formatQty(totalUnaccounted)} · ${fullyReconciled ? 'all items reconciled' : `${diffs} unreconciled item(s)`}`
             : 'Tap to see the closeout report'
         }
         slotProps={{ primary: { fontWeight: 500 } }}
@@ -424,7 +431,10 @@ function CloseoutRow({ closeout }: { closeout: ShiftCloseout }) {
         />
       </Box>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-        Produced {formatQty(closeout.produced)} + Replenished {formatQty(closeout.replenished)} − Wasted {formatQty(closeout.wasted)} → on hand {formatQty(closeout.remaining)} {item.unit}; estimated sold {formatQty(closeout.sold_estimate)}
+        Produced {formatQty(closeout.produced)} + Replenished {formatQty(closeout.replenished)} − Wasted {formatQty(closeout.wasted)} → on hand {formatQty(closeout.remaining)} {item.unit}; unaccounted for {formatQty(closeout.sold_estimate)} {item.unit}
+      </Typography>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+        Unaccounted = sold or missing, as counted at close. It is not a verified sale.
       </Typography>
       {closeout.explanation && (
         <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'warning.main' }}>
