@@ -9,6 +9,7 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import BakeryDiningIcon from '@mui/icons-material/BakeryDining';
 import { useAuth } from '../lib/auth';
+import PasswordInput from '../components/PasswordInput';
 
 export default function SignUpPage() {
   const { signUp } = useAuth();
@@ -75,27 +76,8 @@ export default function SignUpPage() {
             margin="normal"
             required
           />
-          <TextField
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            fullWidth
-            autoComplete="new-password"
-            margin="normal"
-            required
-            helperText="At least 6 characters"
-          />
-          <TextField
-            label="Confirm password"
-            type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            fullWidth
-            autoComplete="new-password"
-            margin="normal"
-            required
-          />
+          <PasswordInput value={password} onChange={setPassword} autoComplete="new-password" helperText="At least 6 characters" />
+          <PasswordInput label="Confirm password" value={confirm} onChange={setConfirm} autoComplete="new-password" />
           <Button
             type="submit"
             variant="contained"

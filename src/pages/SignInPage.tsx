@@ -9,6 +9,7 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import BakeryDiningIcon from '@mui/icons-material/BakeryDining';
 import { useAuth } from '../lib/auth';
+import PasswordInput from '../components/PasswordInput';
 
 export default function SignInPage() {
   const { signIn } = useAuth();
@@ -72,16 +73,7 @@ export default function SignInPage() {
             margin="normal"
             required
           />
-          <TextField
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            fullWidth
-            autoComplete="current-password"
-            margin="normal"
-            required
-          />
+          <PasswordInput value={password} onChange={setPassword} />
           <Button
             type="submit"
             variant="contained"
@@ -95,7 +87,13 @@ export default function SignInPage() {
           </Button>
         </Box>
 
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 3, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5, textAlign: 'center' }}>
+          <RouterLink to="/forgot-password" style={{ color: 'var(--mui-palette-primary-main)', fontWeight: 600 }}>
+            Forgot password?
+          </RouterLink>
+        </Typography>
+
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
           New to LastBatch?{' '}
           <RouterLink to="/sign-up" style={{ color: 'var(--mui-palette-primary-main)', fontWeight: 600 }}>
             Create an account

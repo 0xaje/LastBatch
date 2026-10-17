@@ -15,7 +15,14 @@ import { useAuth } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 import { friendlyDbError } from '../lib/format';
 
-type Mode = 'choose' | 'create' | 'join';
+type Mode = 'choose' | 'create' | 'join-code' | 'join-confirm';
+
+interface InvitationPreview {
+  workspace_name: string;
+  inviter_name: string;
+  expires_at: string;
+  target_email: string | null;
+}
 
 export default function SetupPage() {
   const { session, staff, workspace, loading, refreshWorkspace } = useAuth();
@@ -23,15 +30,14 @@ export default function SetupPage() {
   const [mode, setMode] = useState<Mode>('choose');
   const [workspaceName, setWorkspaceName] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
+  const [preview, setPreview] = useState<InvitationPreview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [joinAvailable, setJoinAvailable] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase.from('workspaces').select('id').limit(1).maybeSingle();
-      setJoinAvailable(Boolean(data));
-    })();
+    // The join path now requires a manager-issued code, so there is nothing to
+    // probe up front.
   }, []);
 
   if (loading) {
@@ -75,8 +81,33 @@ export default function SetupPage() {
     navigate('/', { replace: true });
   };
 
-  const onJoin = async (e: FormEvent) => {
+  const onPreview = async (e: FormEvent) => {
     e.preventDefault();
+    if (inviteCode.trim().length === 0) {
+      setError('Please enter your invitation code.');
+      return;
+    }
+    setError(null);
+    setSubmitting(true);
+    const { data, error: rpcError } = await supabase.rpc('preview_invitation', {
+      p_code: inviteCode.trim(),
+    });
+    setSubmitting(false);
+    if (rpcError) {
+      setError('That code is not valid, has expired, or has already been used. Ask your manager for a new one.');
+      return;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row || !row.workspace_name) {
+      setError('That code is not valid, has expired, or has already been used. Ask your manager for a new one.');
+      return;
+    }
+    setPreview(row as InvitationPreview);
+    setMode('join-confirm');
+  };
+
+  const onJoin = async () => {
+    if (!preview) return;
     const v = validate(false);
     if (v) {
       setError(v);
@@ -84,16 +115,24 @@ export default function SetupPage() {
     }
     setError(null);
     setSubmitting(true);
-    const { error: rpcError } = await supabase.rpc('join_workspace', {
+    const { error: rpcError } = await supabase.rpc('redeem_invitation', {
+      p_code: inviteCode.trim(),
       p_display_name: displayName.trim(),
     });
+    setSubmitting(false);
     if (rpcError) {
       setError(friendlyDbError(rpcError.message));
-      setSubmitting(false);
       return;
     }
     await refreshWorkspace();
     navigate('/', { replace: true });
+  };
+
+  const backToChoose = () => {
+    setMode('choose');
+    setError(null);
+    setPreview(null);
+    setInviteCode('');
   };
 
   return (
@@ -107,10 +146,12 @@ export default function SetupPage() {
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           {mode === 'choose'
-            ? 'Create a workspace for your shop, or join one your manager already created.'
+            ? 'Create a bakery of your own, or join one your manager invited you to.'
             : mode === 'create'
-              ? 'You will be the manager of this workspace.'
-              : 'You will join as staff. A manager can promote you later.'}
+              ? 'You will be the manager of this bakery.'
+              : mode === 'join-code'
+                ? 'Enter the invitation code your manager shared with you.'
+                : 'Check where you are joining before you confirm.'}
         </Typography>
 
         {error && (
@@ -128,17 +169,16 @@ export default function SetupPage() {
               onClick={() => setMode('create')}
               sx={{ py: 2 }}
             >
-              Create a new workspace
+              Create a bakery
             </Button>
             <Button
               variant="outlined"
               size="large"
               startIcon={<GroupAddIcon />}
-              disabled={!joinAvailable}
-              onClick={() => setMode('join')}
+              onClick={() => setMode('join-code')}
               sx={{ py: 2 }}
             >
-              {joinAvailable ? 'Join an existing workspace' : 'No workspace exists yet'}
+              Join with an invitation code
             </Button>
           </Box>
         )}
@@ -146,7 +186,7 @@ export default function SetupPage() {
         {mode === 'create' && (
           <Box component="form" onSubmit={onCreate} noValidate>
             <TextField
-              label="Shop name"
+              label="Bakery name"
               value={workspaceName}
               onChange={(e) => setWorkspaceName(e.target.value)}
               fullWidth
@@ -163,6 +203,9 @@ export default function SetupPage() {
               required
               placeholder="e.g. Alex Johnson"
             />
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+              Creating a bakery makes you its manager. You can invite staff from Staff &amp; settings.
+            </Typography>
             <Button
               type="submit"
               variant="contained"
@@ -172,16 +215,50 @@ export default function SetupPage() {
               sx={{ mt: 2 }}
               startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : null}
             >
-              {submitting ? 'Creating…' : 'Create workspace'}
+              {submitting ? 'Creating…' : 'Create bakery'}
             </Button>
-            <Button variant="text" fullWidth onClick={() => { setMode('choose'); setError(null); }} sx={{ mt: 1 }}>
+            <Button variant="text" fullWidth onClick={backToChoose} sx={{ mt: 1 }}>
               Back
             </Button>
           </Box>
         )}
 
-        {mode === 'join' && (
-          <Box component="form" onSubmit={onJoin} noValidate>
+        {mode === 'join-code' && (
+          <Box component="form" onSubmit={onPreview} noValidate>
+            <TextField
+              label="Invitation code"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              fullWidth
+              margin="normal"
+              required
+              placeholder="e.g. 9f2c…"
+              helperText="Your manager shares this code from their Staff & settings page."
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              size="large"
+              disabled={submitting}
+              sx={{ mt: 2 }}
+              startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : null}
+            >
+              {submitting ? 'Checking…' : 'Check code'}
+            </Button>
+            <Button variant="text" fullWidth onClick={backToChoose} sx={{ mt: 1 }}>
+              Back
+            </Button>
+          </Box>
+        )}
+
+        {mode === 'join-confirm' && preview && (
+          <Box>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              You are joining <strong>{preview.workspace_name}</strong>
+              {preview.inviter_name ? <> — invited by {preview.inviter_name}</> : null}.
+              Joining gives you the staff role.
+            </Alert>
             <TextField
               label="Your name"
               value={displayName}
@@ -193,17 +270,17 @@ export default function SetupPage() {
               helperText="Use your real name so your team recognizes your records"
             />
             <Button
-              type="submit"
               variant="contained"
               fullWidth
               size="large"
               disabled={submitting}
+              onClick={() => void onJoin()}
               sx={{ mt: 2 }}
               startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : null}
             >
-              {submitting ? 'Joining…' : 'Join workspace'}
+              {submitting ? 'Joining…' : `Join ${preview.workspace_name}`}
             </Button>
-            <Button variant="text" fullWidth onClick={() => { setMode('choose'); setError(null); }} sx={{ mt: 1 }}>
+            <Button variant="text" fullWidth onClick={backToChoose} sx={{ mt: 1 }}>
               Back
             </Button>
           </Box>
@@ -213,7 +290,7 @@ export default function SetupPage() {
           <>
             <Divider sx={{ my: 3 }} />
             <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', display: 'block' }}>
-              MVP note: this version supports a single workspace. Anyone who signs up can join it as staff; the creator is the manager.
+              Workspaces are private. You can only join one that has invited you with a valid code — knowing a bakery's name is not enough.
             </Typography>
           </>
         )}
