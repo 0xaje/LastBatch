@@ -21,6 +21,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { useState } from 'react';
 import { useAuth } from '../lib/auth';
 import { initials } from '../lib/format';
+import ThemeToggle from './ThemeToggle';
 import DashboardPage from '../pages/DashboardPage';
 import LogWastePage from '../pages/LogWastePage';
 import ItemsPage from '../pages/ItemsPage';
@@ -51,6 +52,7 @@ export default function AppShell() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'text.primary', fontWeight: 700 }}>
             {workspace.name}
           </Typography>
+          <ThemeToggle />
           <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)} size="small" aria-label="Account menu">
             <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: 13 }}>
               {initials(staff.full_name)}

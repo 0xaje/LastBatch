@@ -111,7 +111,7 @@ export default function SignUpPage() {
 
         <Typography variant="body2" color="text.secondary" sx={{ mt: 3, textAlign: 'center' }}>
           Already have an account?{' '}
-          <RouterLink to="/sign-in" style={{ color: '#174F3D', fontWeight: 600 }}>
+          <RouterLink to="/sign-in" style={{ color: 'var(--mui-palette-primary-main)', fontWeight: 600 }}>
             Sign in
           </RouterLink>
         </Typography>

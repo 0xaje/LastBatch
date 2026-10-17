@@ -1,3 +1,11 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+*.local
+
 # Logs
 logs
 *.log
@@ -7,10 +15,17 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Private / secret files — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+secrets*
+service-account*.json
 
 # Editor directories and files
 .vscode/*
@@ -23,6 +38,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Secrets
-.env
-.env.*
+# Local agent/tooling state
+.bolt
+.v3

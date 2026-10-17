@@ -97,7 +97,7 @@ export default function SignInPage() {
 
         <Typography variant="body2" color="text.secondary" sx={{ mt: 3, textAlign: 'center' }}>
           New to LastBatch?{' '}
-          <RouterLink to="/sign-up" style={{ color: '#174F3D', fontWeight: 600 }}>
+          <RouterLink to="/sign-up" style={{ color: 'var(--mui-palette-primary-main)', fontWeight: 600 }}>
             Create an account
           </RouterLink>
         </Typography>

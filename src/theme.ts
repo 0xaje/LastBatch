@@ -1,58 +1,130 @@
 import { createTheme } from '@mui/material/styles';
 
-const theme = createTheme({
+// Pokter-inspired palette
+// Light: warm editorial daylight. Dark: refined, comfortable night.
+const light = {
   palette: {
-    mode: 'light',
     primary: {
-      main: '#174F3D',
-      light: '#2E6B54',
-      dark: '#0E3A2C',
-      contrastText: '#FFFFFF',
+      main: '#1D7446',
+      light: '#2E8A57',
+      dark: '#145A35',
+      contrastText: '#F3F1EB',
     },
     secondary: {
-      main: '#E9A23B',
-      light: '#F2BC6B',
-      dark: '#C4822A',
-      contrastText: '#202B27',
+      main: '#F0B90B',
+      light: '#F4C93F',
+      dark: '#C29609',
+      contrastText: '#16171A',
     },
     background: {
-      default: '#F8F6F0',
-      paper: '#FFFFFF',
+      default: '#FBFAF6',
+      paper: '#EAE7DF',
     },
     text: {
-      primary: '#202B27',
-      secondary: '#5C6B64',
+      primary: '#16171A',
+      secondary: '#48494D',
     },
     success: {
-      main: '#25855A',
-      light: '#3FA476',
-      dark: '#1B6243',
-      contrastText: '#FFFFFF',
+      main: '#1D7446',
+      light: '#2E8A57',
+      dark: '#145A35',
+      contrastText: '#F3F1EB',
     },
     error: {
-      main: '#C94949',
-      light: '#DA7070',
-      dark: '#A33838',
-      contrastText: '#FFFFFF',
+      main: '#B3423A',
+      light: '#C95F58',
+      dark: '#8E332D',
+      contrastText: '#F3F1EB',
     },
     warning: {
-      main: '#C4822A',
-      contrastText: '#FFFFFF',
+      main: '#C29609',
+      light: '#D8AC2B',
+      dark: '#9A7606',
+      contrastText: '#16171A',
     },
     info: {
-      main: '#174F3D',
-      contrastText: '#FFFFFF',
+      main: '#1D7446',
+      light: '#2E8A57',
+      dark: '#145A35',
+      contrastText: '#F3F1EB',
     },
-    divider: '#E4E0D5',
+    divider: '#DCD8CD',
     grey: {
-      50: '#FAF9F5',
-      100: '#F1EEE5',
-      200: '#E4E0D5',
-      300: '#CFC9B8',
-      400: '#A8A396',
-      500: '#7C776B',
+      50: '#F7F6F1',
+      100: '#EAE7DF',
+      200: '#DCD8CD',
+      300: '#BFBAAD',
+      400: '#A6A397',
+      500: '#66665F',
+      600: '#48494D',
+      700: '#2B2C2F',
     },
   },
+};
+
+const dark = {
+  palette: {
+    primary: {
+      main: '#F0B90B',
+      light: '#F4C93F',
+      dark: '#C29609',
+      contrastText: '#16171A',
+    },
+    secondary: {
+      main: '#2E8A57',
+      light: '#3F9E69',
+      dark: '#1D7446',
+      contrastText: '#F3F1EB',
+    },
+    background: {
+      default: '#16171A',
+      paper: '#292B30',
+    },
+    text: {
+      primary: '#F3F1EB',
+      secondary: '#BFBAAD',
+    },
+    success: {
+      main: '#2E8A57',
+      light: '#3F9E69',
+      dark: '#1D7446',
+      contrastText: '#F3F1EB',
+    },
+    error: {
+      main: '#E06A5F',
+      light: '#EA887E',
+      dark: '#C4514A',
+      contrastText: '#16171A',
+    },
+    warning: {
+      main: '#F0B90B',
+      light: '#F4C93F',
+      dark: '#C29609',
+      contrastText: '#16171A',
+    },
+    info: {
+      main: '#2E8A57',
+      light: '#3F9E69',
+      dark: '#1D7446',
+      contrastText: '#F3F1EB',
+    },
+    divider: '#48494D',
+    grey: {
+      50: '#34363B',
+      100: '#292B30',
+      200: '#24262A',
+      300: '#48494D',
+      400: '#66665F',
+      500: '#A6A397',
+      600: '#BFBAAD',
+      700: '#F3F1EB',
+    },
+  },
+};
+
+const theme = createTheme({
+  cssVariables: { colorSchemeSelector: 'class' },
+  colorSchemes: { light, dark },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h4: {
@@ -98,10 +170,10 @@ const theme = createTheme({
         elevation: 0,
       },
       styleOverrides: {
-        root: {
-          border: '1px solid #E4E0D5',
+        root: ({ theme }) => ({
+          border: `1px solid ${theme.vars.palette.divider}`,
           borderRadius: 14,
-        },
+        }),
       },
     },
     MuiPaper: {
@@ -131,10 +203,10 @@ const theme = createTheme({
     },
     MuiBottomNavigation: {
       styleOverrides: {
-        root: {
-          borderTop: '1px solid #E4E0D5',
-          backgroundColor: '#FFFFFF',
-        },
+        root: ({ theme }) => ({
+          borderTop: `1px solid ${theme.vars.palette.divider}`,
+          backgroundColor: theme.vars.palette.background.default,
+        }),
       },
     },
   },
