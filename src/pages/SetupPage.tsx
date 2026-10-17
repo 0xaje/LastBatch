@@ -8,9 +8,12 @@ import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import BakeryDiningIcon from '@mui/icons-material/BakeryDining';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 import { friendlyDbError } from '../lib/format';
@@ -25,7 +28,7 @@ interface InvitationPreview {
 }
 
 export default function SetupPage() {
-  const { session, staff, workspace, loading, refreshWorkspace } = useAuth();
+  const { session, staff, workspace, loading, refreshWorkspace, signOut } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>('choose');
   const [workspaceName, setWorkspaceName] = useState('');
@@ -138,12 +141,22 @@ export default function SetupPage() {
   return (
     <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 2 }}>
       <Paper elevation={0} sx={{ width: '100%', maxWidth: 440, p: 4, border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <BakeryDiningIcon sx={{ color: 'primary.main', fontSize: 32 }} />
-          <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
-            Set up your workspace
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <BakeryDiningIcon sx={{ color: 'primary.main', fontSize: 32 }} />
+            <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
+              Set up your workspace
+            </Typography>
+          </Box>
+          <Tooltip title={`Signed in as ${session?.user.email ?? ''} — sign out`}>
+            <IconButton onClick={() => void signOut()} size="small" aria-label="Sign out">
+              <LogoutIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </Box>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 3 }}>
+          Signed in as {session?.user.email ?? ''}
+        </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           {mode === 'choose'
             ? 'Create a bakery of your own, or join one your manager invited you to.'
@@ -297,6 +310,9 @@ export default function SetupPage() {
             <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', display: 'block' }}>
               Workspaces are private. You can only join one that has invited you with a valid code — knowing a bakery's name is not enough.
             </Typography>
+            <Button variant="text" fullWidth startIcon={<LogoutIcon />} onClick={() => void signOut()} sx={{ mt: 2 }}>
+              Sign out
+            </Button>
           </>
         )}
       </Paper>
