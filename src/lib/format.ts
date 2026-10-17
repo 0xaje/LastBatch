@@ -23,6 +23,16 @@ export function friendlyDbError(message: string): string {
   if (m.includes('not authorized')) return 'Only managers can do that.';
   if (m.includes('item not found')) return 'That item no longer exists.';
   if (m.includes('user already belongs to a workspace')) return 'This account already belongs to a workspace.';
+  if (m.includes('issued to a different email')) {
+    return 'This invitation was issued to a different email address. Sign in with the exact email your manager used, or ask them for a new invitation.';
+  }
+  if (m.includes('invitation code not recognized')) {
+    return 'That code is not recognized. Check it with your manager and try again.';
+  }
+  if (m.includes('no longer valid') || m.includes('has expired')) {
+    return 'This invitation is no longer valid or has expired. Ask your manager for a new one.';
+  }
+  if (m.includes('invalid display name')) return 'Please enter your name (80 characters or fewer).';
   if (m.includes('quantity > 0') || m.includes('check constraint')) return 'Quantity must be greater than zero.';
   if (m.includes('failed to fetch') || m.includes('network')) return 'Network error. Check your connection and try again.';
   return GENERIC_ERROR;

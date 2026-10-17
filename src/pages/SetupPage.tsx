@@ -259,6 +259,11 @@ export default function SetupPage() {
               {preview.inviter_name ? <> — invited by {preview.inviter_name}</> : null}.
               Joining gives you the staff role.
             </Alert>
+            {preview.target_email && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                This invitation was sent to <strong>{preview.target_email}</strong>. If that is not the email you signed up with, ask your manager for a new invitation.
+              </Typography>
+            )}
             <TextField
               label="Your name"
               value={displayName}

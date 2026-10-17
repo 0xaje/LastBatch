@@ -12,13 +12,6 @@ dist
 dist-ssr
 *.local
 
-# Private config and secrets
-.env
-.env.*
-!.env.example
-.bolt
-.v3
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -29,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets and local tooling
+.env
+.env.*
+!.env.example
+.bolt
+.v3
