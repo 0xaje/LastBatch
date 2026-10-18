@@ -191,7 +191,7 @@ export default function ShiftPage() {
   return (
     <Box sx={{ p: 2, maxWidth: 640, mx: 'auto', pb: 10 }}>
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-        Shift & handover
+        Shift and handover
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Open a shift at the start, count what's left at the end, and leave a note for the next person.
@@ -214,7 +214,7 @@ export default function ShiftPage() {
                 {formatDateTime(openShift.opened_at)} — everything logged since then will be reconciled at close.
               </Typography>
               <Button fullWidth variant="contained" size="large" onClick={() => void startClose()} disabled={busy}>
-                {busy ? 'Preparing…' : 'Close shift & count stock'}
+                {busy ? 'Preparing…' : 'Close shift and count stock'}
               </Button>
             </Paper>
           ) : (

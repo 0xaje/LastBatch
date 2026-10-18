@@ -217,7 +217,7 @@ export default function SetupPage() {
               placeholder="e.g. Alex Johnson"
             />
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-              Creating a bakery makes you its manager. You can invite staff from Staff &amp; settings.
+              Creating a bakery makes you its manager. You can invite staff from Staff and settings.
             </Typography>
             <Button
               type="submit"
@@ -246,7 +246,7 @@ export default function SetupPage() {
               margin="normal"
               required
               placeholder="e.g. 9f2c…"
-              helperText="Your manager shares this code from their Staff & settings page."
+              helperText="Your manager shares this code from their Staff and settings page."
             />
             <Button
               type="submit"

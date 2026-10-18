@@ -9,7 +9,6 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import Chip from '@mui/material/Chip';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import BakeryDiningIcon from '@mui/icons-material/BakeryDining';
@@ -131,40 +130,6 @@ export default function LandingPage() {
             Sign in
           </Button>
         </Box>
-        {/* Product preview — an illustration of the shift closeout screen, with sample values */}
-        <Paper
-          variant="outlined"
-          sx={{
-            p: { xs: 2.5, sm: 3.5 },
-            bgcolor: 'background.paper',
-            borderColor: 'divider',
-            maxWidth: 560,
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-              Shift closeout
-            </Typography>
-            <Chip label="Sample view" size="small" variant="outlined" sx={{ height: 22, fontSize: 12 }} />
-          </Box>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 1, mb: 2 }}>
-            <Typography variant="body2">Croissants</Typography>
-            <Typography variant="body2" sx={{ fontFamily: 'monospace', textAlign: 'right' }}>
-              48 baked · 11 left
-            </Typography>
-            <Typography variant="body2">Sourdough loaf</Typography>
-            <Typography variant="body2" sx={{ fontFamily: 'monospace', textAlign: 'right' }}>
-              20 baked · 2 left
-            </Typography>
-            <Typography variant="body2">Cinnamon roll</Typography>
-            <Typography variant="body2" sx={{ fontFamily: 'monospace', textAlign: 'right' }}>
-              36 baked · 0 left
-            </Typography>
-          </Box>
-          <Typography variant="body2" color="text.secondary">
-            At close of shift each item is counted and reconciled against what was produced, replenished and wasted — with a written explanation for any difference.
-          </Typography>
-        </Paper>
       </Container>
 
       {/* Problem */}

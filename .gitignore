@@ -23,9 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 
-# Secrets and local tooling
+# Environment
 .env
 .env.*
 !.env.example
+
+# Bolt
 .bolt
 .v3

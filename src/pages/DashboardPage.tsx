@@ -308,7 +308,7 @@ export default function DashboardPage() {
           onClick={() => navigate('/shift')}
           sx={{ py: 1.5, borderRadius: 3, gridColumn: { sm: '1 / -1' } }}
         >
-          Shift &amp; handover
+          Shift and handover
         </Button>
       </Box>
 

@@ -153,7 +153,7 @@ export default function StaffPage() {
       </Button>
 
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-        Staff &amp; settings
+        Staff and settings
       </Typography>
       {workspace && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>

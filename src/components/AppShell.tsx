@@ -76,7 +76,7 @@ export default function AppShell() {
             {staff.role === 'manager' && (
               <MenuItem onClick={() => { setMenuAnchor(null); navigate('/staff'); }}>
                 <ListItemIcon><QrCode2Icon fontSize="small" /></ListItemIcon>
-                Staff & settings
+                Staff and settings
               </MenuItem>
             )}
             <MenuItem onClick={() => { setMenuAnchor(null); void signOut(); }}>

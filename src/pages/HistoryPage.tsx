@@ -82,7 +82,7 @@ export default function HistoryPage() {
   return (
     <Box sx={{ p: 2, maxWidth: 640, mx: 'auto', pb: 10 }}>
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-        History & reports
+        History and reports
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         Every number here is summed directly from recorded production, replenishment and waste records for the selected period. Sales are not shown because quantity sold can only be known after a shift is counted and closed — see the shift closeouts for that.
