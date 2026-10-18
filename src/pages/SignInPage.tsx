@@ -48,7 +48,7 @@ export default function SignInPage() {
       <Paper elevation={0} sx={{ width: '100%', maxWidth: 420, p: 4, border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
         <BrandLink />
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Production, waste and shift tracking for your bakery or café.
+          Production, waste and shift tracking for your team.
         </Typography>
 
         {error && (

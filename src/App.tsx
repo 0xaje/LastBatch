@@ -20,7 +20,7 @@ function LandingOrApp() {
   const { session, staff, workspace, loading } = useAuth();
   if (loading) return null;
   if (session && staff && workspace) return <AppShell />;
-  if (session && staff && !workspace) return <Navigate to="/setup" replace />;
+  if (session) return <Navigate to="/setup" replace />;
   return <LandingPage />;
 }
 

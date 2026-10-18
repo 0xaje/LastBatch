@@ -41,12 +41,12 @@ const STEPS = [
   {
     step: '1',
     title: 'Set up your catalogue',
-    body: 'Create a workspace and list the items you bake, with their units. Managers invite staff with a single-use code.',
+    body: 'Create a workspace and list the items your team produces or manages, with their units. Managers invite staff with a single-use code.',
   },
   {
     step: '2',
     title: 'Log activity during the shift',
-    body: 'Batches as they leave the oven, replenishments to the counter, and waste as it happens. Each entry is recorded with a time and a name.',
+    body: 'Production runs, replenishments to the counter, and waste as it happens. Each entry is recorded with a time and a name.',
   },
   {
     step: '3',
@@ -106,7 +106,7 @@ export default function LandingPage() {
       {/* Hero */}
       <Container maxWidth="md" sx={{ px: { xs: 2, md: 4 }, pt: { xs: 8, md: 12 }, pb: { xs: 6, md: 10 } }}>
         <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: '0.08em' }}>
-          For bakeries and cafés
+          Operational accountability for teams
         </Typography>
         <Typography
           variant="h2"
@@ -119,10 +119,10 @@ export default function LandingPage() {
             mb: 2,
           }}
         >
-          Know exactly what left your kitchen, and where it went.
+          Every action accounted for. Every handover documented.
         </Typography>
         <Typography variant="h6" component="p" color="text.secondary" sx={{ fontWeight: 400, maxWidth: 640, mb: 4 }}>
-          LastBatch tracks production batches, replenishments and waste as they happen, reconciles them against counted stock at close of shift, and hands the numbers over with the shift.
+          LastBatch helps teams record daily operations, track stock movements, reconcile differences, and keep responsibilities clear from one shift to the next.
         </Typography>
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 6 }}>
           <Button component={RouterLink} to="/sign-up" variant="contained" size="large" sx={{ px: 4 }}>
@@ -144,10 +144,10 @@ export default function LandingPage() {
             The problem
           </Typography>
           <Typography variant="h4" component="h2" sx={{ fontWeight: 700, letterSpacing: '-0.02em', mb: 2 }}>
-            Unsold baked goods are only visible when someone counts them.
+            Unaccounted stock is only visible when someone counts it.
           </Typography>
           <Typography color="text.secondary" sx={{ maxWidth: 640 }}>
-            In a busy bakery, trays leave the oven, items move to the counter, some are sold, some are given away, some go stale. At the end of the day the numbers rarely agree. Without a written record of what was produced, moved, thrown away and counted, nobody can say why.
+            Goods leave the storeroom, move to the counter, some are sold, some are given away, some are discarded. At the end of the day the numbers rarely agree. Without a written record of what was produced, moved, thrown away and counted, nobody can say why.
           </Typography>
         </Container>
       </Box>
@@ -225,7 +225,7 @@ export default function LandingPage() {
             </Typography>
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Production, waste and shift tracking for bakeries and cafés.
+            Operational accountability for teams: record daily operations, track stock movements, reconcile differences, and hand over responsibilities clearly.
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <Typography variant="caption" color="text.secondary">

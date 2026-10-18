@@ -159,9 +159,9 @@ export default function SetupPage() {
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           {mode === 'choose'
-            ? 'Create a bakery of your own, or join one your manager invited you to.'
+            ? 'Create a workspace of your own, or join one your manager invited you to.'
             : mode === 'create'
-              ? 'You will be the manager of this bakery.'
+              ? 'You will be the manager of this workspace.'
               : mode === 'join-code'
                 ? 'Enter the invitation code your manager shared with you.'
                 : 'Check where you are joining before you confirm.'}
@@ -182,7 +182,7 @@ export default function SetupPage() {
               onClick={() => setMode('create')}
               sx={{ py: 2 }}
             >
-              Create a bakery
+              Create a workspace
             </Button>
             <Button
               variant="outlined"
@@ -199,13 +199,13 @@ export default function SetupPage() {
         {mode === 'create' && (
           <Box component="form" onSubmit={onCreate} noValidate>
             <TextField
-              label="Bakery name"
+              label="Workspace name"
               value={workspaceName}
               onChange={(e) => setWorkspaceName(e.target.value)}
               fullWidth
               margin="normal"
               required
-              placeholder="e.g. Corner Bakery"
+              placeholder="e.g. Corner Bakery on Main St."
             />
             <TextField
               label="Your name"
@@ -217,7 +217,7 @@ export default function SetupPage() {
               placeholder="e.g. Alex Johnson"
             />
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-              Creating a bakery makes you its manager. You can invite staff from Staff and settings.
+              Creating a workspace makes you its manager. You can invite staff from Staff and settings.
             </Typography>
             <Button
               type="submit"
@@ -228,7 +228,7 @@ export default function SetupPage() {
               sx={{ mt: 2 }}
               startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : null}
             >
-              {submitting ? 'Creating…' : 'Create bakery'}
+              {submitting ? 'Creating…' : 'Create workspace'}
             </Button>
             <Button variant="text" fullWidth onClick={backToChoose} sx={{ mt: 1 }}>
               Back
@@ -308,7 +308,7 @@ export default function SetupPage() {
           <>
             <Divider sx={{ my: 3 }} />
             <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', display: 'block' }}>
-              Workspaces are private. You can only join one that has invited you with a valid code. Knowing a bakery's name is not enough.
+              Workspaces are private. You can only join one that has invited you with a valid code. Knowing a workspace's name is not enough.
             </Typography>
             <Button variant="text" fullWidth startIcon={<LogoutIcon />} onClick={() => void signOut()} sx={{ mt: 2 }}>
               Sign out

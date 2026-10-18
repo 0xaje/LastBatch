@@ -129,7 +129,7 @@ export default function ItemsPage() {
       {!loading && !error && items.length === 0 && (
         <EmptyState
           title="No items yet"
-          description="Add the things you bake, such as breads, pastries and drinks, so staff can record production and waste against them."
+          description="Add the items your team produces or manages, so staff can record production and waste against them."
           action={
             <Button variant="contained" startIcon={<AddIcon />} onClick={openDialog}>
               Add first item

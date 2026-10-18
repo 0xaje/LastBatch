@@ -285,7 +285,7 @@ export default function StaffPage() {
         <DialogTitle>Invite a staff member</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            They sign up with their own account, enter the code on their setup screen, and join {workspace?.name ?? 'your bakery'} as staff.
+            They sign up with their own account, enter the code on their setup screen, and join {workspace?.name ?? 'your workspace'} as staff.
           </Typography>
           <TextField
             label="Their email (optional)"
@@ -293,7 +293,7 @@ export default function StaffPage() {
             onChange={(e) => setInviteEmail(e.target.value)}
             fullWidth
             margin="normal"
-            placeholder="e.g. sam@bakery.com"
+            placeholder="e.g. sam@example.com"
             helperText="If set, only this email address can use the code."
           />
           <TextField
@@ -321,7 +321,7 @@ export default function StaffPage() {
         <DialogTitle>Share this invitation code</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Anyone with this code can join {workspace?.name ?? 'your bakery'} as staff (until it expires or is revoked). Keep it private.
+            Anyone with this code can join {workspace?.name ?? 'your workspace'} as staff (until it expires or is revoked). Keep it private.
           </Typography>
           <TextField
             value={lastCode ?? ''}

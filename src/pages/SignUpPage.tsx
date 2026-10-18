@@ -54,7 +54,7 @@ export default function SignUpPage() {
           Create your account
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Next, you'll set up your bakery's workspace or join your team.
+          Next, you'll set up your team's workspace or join the one you were invited to.
         </Typography>
 
         {error && (
