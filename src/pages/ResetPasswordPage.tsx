@@ -6,9 +6,9 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
-import BakeryDiningIcon from '@mui/icons-material/BakeryDining';
 import { supabase } from '../lib/supabase';
 import PasswordInput from '../components/PasswordInput';
+import BrandLink from '../components/BrandLink';
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -73,12 +73,10 @@ export default function ResetPasswordPage() {
   return (
     <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 2 }}>
       <Paper elevation={0} sx={{ width: '100%', maxWidth: 420, p: 4, border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <BakeryDiningIcon sx={{ color: 'primary.main', fontSize: 32 }} />
-          <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
-            {done ? 'Password updated' : 'Choose a new password'}
-          </Typography>
-        </Box>
+        <BrandLink />
+        <Typography variant="h5" component="h1" sx={{ fontWeight: 700, mb: 1 }}>
+          {done ? 'Password updated' : 'Choose a new password'}
+        </Typography>
 
         {!hasRecoverySession && !done ? (
           <>
@@ -129,6 +127,12 @@ export default function ResetPasswordPage() {
         <Typography variant="body2" color="text.secondary" sx={{ mt: 3, textAlign: 'center' }}>
           <RouterLink to="/sign-in" style={{ color: 'var(--mui-palette-primary-main)', fontWeight: 600 }}>
             Back to sign in
+          </RouterLink>
+        </Typography>
+
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5, textAlign: 'center' }}>
+          <RouterLink to="/" style={{ color: 'var(--mui-palette-text-secondary)', fontWeight: 600 }}>
+            Back to home
           </RouterLink>
         </Typography>
       </Paper>

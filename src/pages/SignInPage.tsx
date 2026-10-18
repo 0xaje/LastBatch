@@ -7,9 +7,9 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
-import BakeryDiningIcon from '@mui/icons-material/BakeryDining';
 import { useAuth } from '../lib/auth';
 import PasswordInput from '../components/PasswordInput';
+import BrandLink from '../components/BrandLink';
 
 export default function SignInPage() {
   const { signIn } = useAuth();
@@ -46,12 +46,7 @@ export default function SignInPage() {
   return (
     <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 2 }}>
       <Paper elevation={0} sx={{ width: '100%', maxWidth: 420, p: 4, border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <BakeryDiningIcon sx={{ color: 'primary.main', fontSize: 32 }} />
-          <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
-            LastBatch
-          </Typography>
-        </Box>
+        <BrandLink />
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           Production, waste and shift tracking for your bakery or café.
         </Typography>

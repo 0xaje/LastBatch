@@ -70,7 +70,12 @@ export default function LandingPage() {
       {/* Nav */}
       <AppBar position="sticky" sx={{ bgcolor: 'background.default', borderBottom: '1px solid', borderColor: 'divider' }}>
         <Toolbar sx={{ gap: 1, px: { xs: 2, md: 4 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
+          <Box
+            component={RouterLink}
+            to="/"
+            aria-label="LastBatch home"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1, textDecoration: 'none', '&:hover': { opacity: 0.85 } }}
+          >
             <BakeryDiningIcon sx={{ color: 'primary.main', fontSize: 28 }} />
             <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary' }}>
               LastBatch
