@@ -65,16 +65,16 @@ const light = {
 const dark = {
   palette: {
     primary: {
-      main: '#F0B90B',
-      light: '#F4C93F',
-      dark: '#C29609',
-      contrastText: '#16171A',
-    },
-    secondary: {
       main: '#2E8A57',
       light: '#3F9E69',
       dark: '#1D7446',
       contrastText: '#F3F1EB',
+    },
+    secondary: {
+      main: '#F0B90B',
+      light: '#F4C93F',
+      dark: '#C29609',
+      contrastText: '#16171A',
     },
     background: {
       default: '#16171A',
