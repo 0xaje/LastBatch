@@ -4,22 +4,22 @@
 
 LastBatch is an operational accountability platform for organizations and teams. It helps teams record daily operations, track stock movements, reconcile differences, and keep responsibilities clear from one shift to the next.
 
-Bakeries and cafés are the first use case: production runs, replenishments, waste, and end-of-shift counts. The underlying model — record activity as it happens, reconcile it against what is actually on hand, and require written explanations for gaps — applies to any team that moves physical stock through a shift.
+Bakeries and cafés are the first use case: production runs, replenishments, waste, and end-of-shift counts. The underlying model (record activity as it happens, reconcile it against what is actually on hand, and require written explanations for gaps) applies to any team that moves physical stock through a shift.
 
 ## Why it exists
 
 In a busy operation, goods leave the storeroom, move to the counter, some are sold, some are given away, some are discarded. At the end of the day the numbers rarely agree. Without a written record of what was produced, moved, thrown away, and counted, nobody can say why. LastBatch closes that gap:
 
-- **Record operational activity** — every production run, replenishment, and waste event is logged as it happens, with who did it, when, and how much.
-- **Reconcile quantities and discrepancies** — at close of shift, counted stock is compared against what was produced, replenished, and wasted, so gaps are explained in writing rather than guessed.
-- **Hand over responsibilities** — shift closeouts and handover notes are acknowledged by the next person, so nothing falls through between shifts.
+- **Record operational activity:** every production run, replenishment, and waste event is logged as it happens, with who did it, when, and how much.
+- **Reconcile quantities and discrepancies:** at close of shift, counted stock is compared against what was produced, replenished, and wasted, so gaps are explained in writing rather than guessed.
+- **Hand over responsibilities:** shift closeouts and handover notes are acknowledged by the next person, so nothing falls through between shifts.
 
 ## How it works
 
-1. **Set up a catalogue** — create a workspace and list the items your team produces or manages, with their units. Managers invite staff with a single-use code.
-2. **Log activity during the shift** — production runs, replenishments to the counter, and waste as it happens. Each entry is recorded with a time and a name.
-3. **Count and close the shift** — count what is left. LastBatch compares it against production, replenishment, and waste, and flags anything unaccounted for. A written explanation is required for every unreconciled difference.
-4. **Hand over with confidence** — write a handover note, and the next shift acknowledges it. The closeout record keeps the numbers and explanations on file.
+1. **Set up a catalogue:** create a workspace and list the items your team produces or manages, with their units. Managers invite staff with a single-use code.
+2. **Log activity during the shift:** production runs, replenishments to the counter, and waste as it happens. Each entry is recorded with a time and a name.
+3. **Count and close the shift:** count what is left. LastBatch compares it against production, replenishment, and waste, and flags anything unaccounted for. A written explanation is required for every unreconciled difference.
+4. **Hand over with confidence:** write a handover note, and the next shift acknowledges it. The closeout record keeps the numbers and explanations on file.
 
 ## Intended users
 
