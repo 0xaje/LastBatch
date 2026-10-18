@@ -40,6 +40,7 @@ export default function ShiftPage() {
   const [closeOpen, setCloseOpen] = useState(false);
   const [counts, setCounts] = useState<CountRow[]>([]);
   const [closeError, setCloseError] = useState<string | null>(null);
+  const [openingSource, setOpeningSource] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -83,18 +84,46 @@ export default function ShiftPage() {
     setBusy(true);
 
     const openedAt = new Date(openShift.opened_at).toISOString();
-    const [itemsRes, batchesRes, replRes, wasteRes] = await Promise.all([
+    // Per-item opening balance, matching close_shift(): the counted remainder
+    // from each item's most recent closed shift on or before this shift's open.
+    // Two FKs exist from shift_closeouts to shifts, so the embed needs the
+    // explicit shift_id hint to avoid an ambiguous-column error.
+    const prevCloseoutsRes = supabase
+      .from('shift_closeouts')
+      .select('item_id, remaining, shift_id!inner(id, closed_at, status)')
+      .eq('shift_id.status', 'closed')
+      .lt('shift_id.closed_at', openedAt);
+    const [itemsRes, batchesRes, replRes, wasteRes, prevCloseouts] = await Promise.all([
       supabase.from('food_items').select('*').order('name'),
       supabase.from('batches').select('item_id, quantity, produced_at').gte('produced_at', openedAt),
       supabase.from('replenishments').select('item_id, quantity, recorded_at').gte('recorded_at', openedAt),
       supabase.from('waste_events').select('item_id, quantity, wasted_at').gte('wasted_at', openedAt),
+      prevCloseoutsRes,
     ]);
 
     setBusy(false);
-    if (itemsRes.error || batchesRes.error || replRes.error || wasteRes.error) {
-      setCloseError(friendlyDbError(itemsRes.error?.message || batchesRes.error?.message || replRes.error?.message || wasteRes.error?.message || ''));
+    if (itemsRes.error || batchesRes.error || replRes.error || wasteRes.error || prevCloseouts.error) {
+      setCloseError(friendlyDbError(itemsRes.error?.message || batchesRes.error?.message || replRes.error?.message || wasteRes.error?.message || prevCloseouts.error?.message || ''));
       return;
     }
+
+    type PrevRow = { item_id: string; remaining: number; shift_id: { id: string; closed_at: string | null } };
+    const openingMap = new Map<string, number>();
+    const openingSourceMap = new Map<string, string>();
+    let openingSourceLabel: string | null = null;
+    const prevRows = ((prevCloseouts.data ?? []) as unknown as PrevRow[])
+      .slice()
+      .sort((a, b) => (b.shift_id.closed_at ?? '').localeCompare(a.shift_id.closed_at ?? ''));
+    for (const c of prevRows) {
+      if (!openingMap.has(c.item_id)) {
+        openingMap.set(c.item_id, Number(c.remaining));
+        openingSourceMap.set(c.item_id, c.shift_id.id);
+        if (!openingSourceLabel && c.shift_id.closed_at) {
+          openingSourceLabel = `shift closed ${formatDateTime(c.shift_id.closed_at)}`;
+        }
+      }
+    }
+    setOpeningSource(openingMap.size > 0 ? openingSourceLabel : null);
 
     const items = (itemsRes.data ?? []) as { id: string; name: string; unit: string; is_active: boolean }[];
     const producedMap = new Map<string, number>();
@@ -111,8 +140,9 @@ export default function ShiftPage() {
     }
 
     const rows: CountRow[] = items
-      .filter((i) => i.is_active || (producedMap.get(i.id) ?? 0) > 0 || (replMap.get(i.id) ?? 0) > 0 || (wasteMap.get(i.id) ?? 0) > 0)
+      .filter((i) => i.is_active || (producedMap.get(i.id) ?? 0) > 0 || (replMap.get(i.id) ?? 0) > 0 || (wasteMap.get(i.id) ?? 0) > 0 || openingMap.has(i.id))
       .map((i) => {
+      const opening = openingMap.get(i.id) ?? 0;
       const produced = producedMap.get(i.id) ?? 0;
       const replenished = replMap.get(i.id) ?? 0;
       const wasted = wasteMap.get(i.id) ?? 0;
@@ -120,10 +150,12 @@ export default function ShiftPage() {
         item_id: i.id,
         name: i.name,
         unit: i.unit,
+        opening,
+        opening_source_shift_id: openingSourceMap.get(i.id) ?? null,
         produced,
         replenished,
         wasted,
-        expected: produced + replenished - wasted,
+        expected: opening + produced + replenished - wasted,
         remaining: '',
         explanation: '',
         inactive: !i.is_active,
@@ -199,6 +231,12 @@ export default function ShiftPage() {
 
       {loading && <PageLoader />}
       {!loading && error && <ErrorState message={error} onRetry={() => void load()} />}
+
+      {!loading && !error && closeError && !closeOpen && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setCloseError(null)}>
+          {closeError}
+        </Alert>
+      )}
 
       {!loading && !error && (
         <>
@@ -281,6 +319,11 @@ export default function ShiftPage() {
               {closeError}
             </Alert>
           )}
+          {openingSource && (
+            <Alert severity="info" sx={{ mb: 2, mt: 1 }}>
+              Opening stock carried over from the {openingSource}.
+            </Alert>
+          )}
           {counts.map((c, idx) => {
             const rem = Number(c.remaining);
             const diff = c.remaining === '' || !Number.isFinite(rem) ? null : c.expected - rem;
@@ -293,7 +336,7 @@ export default function ShiftPage() {
                   {c.inactive && <Chip size="small" label="No longer on the menu" variant="outlined" />}
                 </Box>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                  Produced {formatQty(c.produced)} · Replenished {formatQty(c.replenished)} · Wasted {formatQty(c.wasted)}. Expected on hand: {formatQty(Math.max(c.expected, 0))} {c.unit}
+                  Opening {formatQty(c.opening)}{c.opening > 0 && c.opening_source_shift_id ? ' (carried over from the previous shift)' : ''} · Produced {formatQty(c.produced)} · Replenished {formatQty(c.replenished)} · Wasted {formatQty(c.wasted)}. Expected on hand: {formatQty(Math.max(c.expected, 0))} {c.unit}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField

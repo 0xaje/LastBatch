@@ -90,6 +90,8 @@ export interface ShiftCloseout {
   id: string;
   shift_id: string;
   item_id: string;
+  opening: number;
+  opening_source_shift_id: string | null;
   produced: number;
   replenished: number;
   wasted: number;
@@ -130,6 +132,8 @@ export interface CountRow {
   item_id: string;
   name: string;
   unit: string;
+  opening: number;
+  opening_source_shift_id: string | null;
   produced: number;
   replenished: number;
   wasted: number;

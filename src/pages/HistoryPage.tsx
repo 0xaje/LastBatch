@@ -4,10 +4,15 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Chip from '@mui/material/Chip';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import CircularProgress from '@mui/material/CircularProgress';
 import { supabase } from '../lib/supabase';
-import type { ActivityEntry, Batch, Replenishment, WasteEvent } from '../lib/types';
+import type { ActivityEntry, Batch, Replenishment, Shift, ShiftCloseout, WasteEvent } from '../lib/types';
 import { EmptyState, ErrorState, PageLoader } from '../components/States';
-import { formatDateTime, friendlyDbError } from '../lib/format';
+import { formatDateTime, formatQty, friendlyDbError } from '../lib/format';
 
 type Range = 'today' | '7d' | '30d';
 
@@ -24,6 +29,8 @@ export default function HistoryPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [replenishments, setReplenishments] = useState<Replenishment[]>([]);
   const [waste, setWaste] = useState<WasteEvent[]>([]);
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [team, setTeam] = useState<{ id: string; full_name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,19 +45,23 @@ export default function HistoryPage() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const [actRes, batchRes, replRes, wasteRes] = await Promise.all([
+    const [actRes, batchRes, replRes, wasteRes, shiftsRes, teamRes] = await Promise.all([
       supabase.from('activity_log').select('*').gte('created_at', since).order('created_at', { ascending: false }).limit(200),
       supabase.from('batches').select('*').gte('produced_at', since),
       supabase.from('replenishments').select('*').gte('recorded_at', since),
       supabase.from('waste_events').select('*').gte('wasted_at', since),
+      supabase.from('shifts').select('*').eq('status', 'closed').order('closed_at', { ascending: false }).limit(20),
+      supabase.from('staff').select('id, full_name'),
     ]);
-    if (actRes.error || batchRes.error || replRes.error || wasteRes.error) {
-      setError(friendlyDbError(actRes.error?.message || batchRes.error?.message || replRes.error?.message || wasteRes.error?.message || ''));
+    if (actRes.error || batchRes.error || replRes.error || wasteRes.error || shiftsRes.error || teamRes.error) {
+      setError(friendlyDbError(actRes.error?.message || batchRes.error?.message || replRes.error?.message || wasteRes.error?.message || shiftsRes.error?.message || teamRes.error?.message || ''));
     } else {
       setActivity((actRes.data ?? []) as ActivityEntry[]);
       setBatches((batchRes.data ?? []) as Batch[]);
       setReplenishments((replRes.data ?? []) as Replenishment[]);
       setWaste((wasteRes.data ?? []) as WasteEvent[]);
+      setShifts((shiftsRes.data ?? []) as Shift[]);
+      setTeam((teamRes.data ?? []) as { id: string; full_name: string }[]);
     }
     setLoading(false);
   }, [since]);
@@ -100,6 +111,19 @@ export default function HistoryPage() {
         <ToggleButton value="7d">Last 7 days</ToggleButton>
         <ToggleButton value="30d">Last 30 days</ToggleButton>
       </ToggleButtonGroup>
+
+      <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+        Shift closeouts
+      </Typography>
+      {shifts.length === 0 ? (
+        <EmptyState title="No closed shifts in this period" description="Close a shift to see its reconciliation report here." />
+      ) : (
+        <List sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', py: 0, overflow: 'hidden', mb: 3 }}>
+          {shifts.map((s) => (
+            <ShiftCloseoutRow key={s.id} shift={s} team={team} />
+          ))}
+        </List>
+      )}
 
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
         <ReportCard label="Produced" value={totals.produced} />
@@ -175,5 +199,95 @@ function ReportCard({ label, value, tone }: { label: string; value: number; tone
         {value.toLocaleString(undefined, { maximumFractionDigits: 3 })}
       </Typography>
     </Paper>
+  );
+}
+
+function ShiftCloseoutRow({ shift, team }: { shift: Shift; team: { id: string; full_name: string }[] }) {
+  const [closeouts, setCloseouts] = useState<ShiftCloseout[] | null>(null);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!expanded || closeouts) return;
+    (async () => {
+      const { data } = await supabase.from('shift_closeouts').select('*').eq('shift_id', shift.id);
+      setCloseouts((data ?? []) as ShiftCloseout[]);
+    })();
+  }, [expanded, closeouts, shift.id]);
+
+  const diffs = closeouts?.filter((c) => Number(c.difference) !== 0).length ?? 0;
+  const fullyReconciled = closeouts !== null && diffs === 0;
+
+  return (
+    <ListItem
+      onClick={() => setExpanded((v) => !v)}
+      sx={{ borderBottom: '1px solid', borderColor: 'divider', cursor: 'pointer', flexDirection: 'column', alignItems: 'stretch' }}
+    >
+      <ListItemText
+        primary={`Closed ${formatDateTime(shift.closed_at ?? shift.opened_at)}`}
+        secondary={
+          closeouts
+            ? `Closed by ${team.find((t) => t.id === shift.closed_by)?.full_name ?? 'Unknown'} · ${fullyReconciled ? 'all items reconciled' : `${diffs} unreconciled item(s)`}`
+            : `Closed by ${team.find((t) => t.id === shift.closed_by)?.full_name ?? 'Unknown'} · Tap to see the closeout report`
+        }
+        slotProps={{ primary: { fontWeight: 500 } }}
+      />
+      {expanded && (
+        <Box sx={{ mt: 1 }}>
+          {closeouts === null && <CircularProgress size={18} />}
+          {closeouts?.map((c) => (
+            <Box key={c.id} sx={{ mb: 1.5 }}>
+              <CloseoutRow closeout={c} />
+            </Box>
+          ))}
+        </Box>
+      )}
+    </ListItem>
+  );
+}
+
+function CloseoutRow({ closeout }: { closeout: ShiftCloseout }) {
+  const [item, setItem] = useState<{ name: string; unit: string } | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('food_items')
+        .select('name, unit')
+        .eq('id', closeout.item_id)
+        .maybeSingle();
+      setItem((data ?? null) as { name: string; unit: string } | null);
+    })();
+  }, [closeout.item_id]);
+
+  if (!item) return <Typography variant="caption">Loading item…</Typography>;
+  const diff = Number(closeout.difference);
+  const opening = Number(closeout.opening);
+  const produced = Number(closeout.produced);
+  const replenished = Number(closeout.replenished);
+  const wasted = Number(closeout.wasted);
+  const expected = opening + produced + replenished - wasted;
+  return (
+    <Box sx={{ bgcolor: 'grey.50', borderRadius: 2, p: 1.5 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>{item.name}</Typography>
+        <Chip
+          size="small"
+          label={diff === 0 ? 'Reconciled' : `${diff > 0 ? '+' : ''}${formatQty(diff)}`}
+          color={diff === 0 ? 'success' : 'warning'}
+          variant={diff === 0 ? 'outlined' : 'filled'}
+        />
+      </Box>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+        Opening {formatQty(opening)}{opening > 0 && closeout.opening_source_shift_id ? ' (carried over)' : ''} + Produced {formatQty(produced)} + Replenished {formatQty(replenished)} − Wasted {formatQty(wasted)} = Expected {formatQty(expected)} {item.unit}; counted {formatQty(closeout.remaining)} {item.unit}
+      </Typography>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+        Difference {diff === 0 ? '0' : `${diff > 0 ? '+' : ''}${formatQty(diff)}`} {item.unit}. {diff > 0 ? `Unaccounted for ${formatQty(closeout.sold_estimate)} ${item.unit} — sold or missing, as counted at close. It is not a verified sale.` : diff < 0 ? 'More items counted than expected. It is not a verified stock addition.' : ''}
+      </Typography>
+      {closeout.explanation && (
+        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'warning.main' }}>
+          Explanation: {closeout.explanation}
+        </Typography>
+      )}
+    </Box>
   );
 }
