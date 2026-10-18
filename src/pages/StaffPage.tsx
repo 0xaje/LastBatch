@@ -112,7 +112,7 @@ export default function StaffPage() {
     setLastCode(typeof data === 'string' ? data : null);
     setInviteOpen(false);
     setInviteEmail('');
-    setToast('Invitation created — share the code with your new team member');
+    setToast('Invitation created. Share the code with your new team member');
     void load();
   };
 
@@ -131,7 +131,7 @@ export default function StaffPage() {
       await navigator.clipboard.writeText(code);
       setToast('Code copied');
     } catch {
-      setToast('Could not copy — clipboard unavailable');
+      setToast('Could not copy. Clipboard unavailable');
     }
   };
 
@@ -235,7 +235,7 @@ export default function StaffPage() {
             const emails = team.map((t) => `${t.full_name} <${t.email}>`).join(', ');
             navigator.clipboard.writeText(emails).then(
               () => setToast('Team member details copied'),
-              () => setToast('Could not copy — clipboard unavailable'),
+              () => setToast('Could not copy. Clipboard unavailable'),
             );
           }}>
             Copy team details

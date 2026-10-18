@@ -23,7 +23,7 @@ const PILLARS = [
   {
     icon: <FactoryIcon />,
     title: 'Record operational activity',
-    body: 'Every production batch, replenishment and waste event is logged as it happens — with who did it, when, and how much.',
+    body: 'Every production batch, replenishment and waste event is logged as it happens, with who did it, when, and how much.',
   },
   {
     icon: <RuleIcon />,
@@ -41,12 +41,12 @@ const STEPS = [
   {
     step: '1',
     title: 'Set up your catalogue',
-    body: 'Create a workspace and list the items you bake — with their units. Managers invite staff with a single-use code.',
+    body: 'Create a workspace and list the items you bake, with their units. Managers invite staff with a single-use code.',
   },
   {
     step: '2',
     title: 'Log activity during the shift',
-    body: 'Batches as they leave the oven, replenishments to the counter, and waste as it happens — each entry recorded with a time and a name.',
+    body: 'Batches as they leave the oven, replenishments to the counter, and waste as it happens. Each entry is recorded with a time and a name.',
   },
   {
     step: '3',
@@ -114,7 +114,7 @@ export default function LandingPage() {
             mb: 2,
           }}
         >
-          Know exactly what left your kitchen — and where it went.
+          Know exactly what left your kitchen, and where it went.
         </Typography>
         <Typography variant="h6" component="p" color="text.secondary" sx={{ fontWeight: 400, maxWidth: 640, mb: 4 }}>
           LastBatch tracks production batches, replenishments and waste as they happen, reconciles them against counted stock at close of shift, and hands the numbers over with the shift.
@@ -142,7 +142,7 @@ export default function LandingPage() {
             Unsold baked goods are only visible when someone counts them.
           </Typography>
           <Typography color="text.secondary" sx={{ maxWidth: 640 }}>
-            In a busy bakery, trays leave the oven, items move to the counter, some are sold, some are given away, some go stale. At the end of the day the numbers rarely agree — and without a written record of what was produced, moved, thrown away and counted, nobody can say why.
+            In a busy bakery, trays leave the oven, items move to the counter, some are sold, some are given away, some go stale. At the end of the day the numbers rarely agree. Without a written record of what was produced, moved, thrown away and counted, nobody can say why.
           </Typography>
         </Container>
       </Box>

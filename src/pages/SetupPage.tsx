@@ -148,7 +148,7 @@ export default function SetupPage() {
               Set up your workspace
             </Typography>
           </Box>
-          <Tooltip title={`Signed in as ${session?.user.email ?? ''} — sign out`}>
+          <Tooltip title={`Signed in as ${session?.user.email ?? ''}. Click to sign out`}>
             <IconButton onClick={() => void signOut()} size="small" aria-label="Sign out">
               <LogoutIcon fontSize="small" />
             </IconButton>
@@ -269,7 +269,7 @@ export default function SetupPage() {
           <Box>
             <Alert severity="info" sx={{ mb: 2 }}>
               You are joining <strong>{preview.workspace_name}</strong>
-              {preview.inviter_name ? <> — invited by {preview.inviter_name}</> : null}.
+              {preview.inviter_name ? <>, invited by {preview.inviter_name}</> : null}.
               Joining gives you the staff role.
             </Alert>
             {preview.target_email && (
@@ -308,7 +308,7 @@ export default function SetupPage() {
           <>
             <Divider sx={{ my: 3 }} />
             <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', display: 'block' }}>
-              Workspaces are private. You can only join one that has invited you with a valid code — knowing a bakery's name is not enough.
+              Workspaces are private. You can only join one that has invited you with a valid code. Knowing a bakery's name is not enough.
             </Typography>
             <Button variant="text" fullWidth startIcon={<LogoutIcon />} onClick={() => void signOut()} sx={{ mt: 2 }}>
               Sign out

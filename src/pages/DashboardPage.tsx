@@ -258,7 +258,7 @@ export default function DashboardPage() {
         <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
             <WarningAmberIcon fontSize="small" sx={{ color: 'warning.main' }} />
-            <Typography variant="subtitle2">Unresolved discrepancies — last closeout</Typography>
+            <Typography variant="subtitle2">Unresolved discrepancies from the last closeout</Typography>
           </Box>
           <List disablePadding>
             {discrepancies.map((d, i) => (
@@ -314,7 +314,7 @@ export default function DashboardPage() {
 
       {items.length === 0 && !loading && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          Add items to your catalogue first — then you can log batches against them.
+          Add items to your catalogue first, then you can log batches against them.
         </Alert>
       )}
 

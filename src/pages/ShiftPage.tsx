@@ -148,7 +148,7 @@ export default function ShiftPage() {
       }
       const diff = c.expected - rem;
       if (diff !== 0 && c.explanation.trim() === '') {
-        setCloseError(`Unreconciled difference for ${c.name} — write an explanation.`);
+        setCloseError(`Unreconciled difference for ${c.name}. Write an explanation.`);
         return;
       }
     }
@@ -211,7 +211,7 @@ export default function ShiftPage() {
                 </Typography>
               </Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                {formatDateTime(openShift.opened_at)} — everything logged since then will be reconciled at close.
+                {formatDateTime(openShift.opened_at)}. Everything logged since then will be reconciled at close.
               </Typography>
               <Button fullWidth variant="contained" size="large" onClick={() => void startClose()} disabled={busy}>
                 {busy ? 'Preparing…' : 'Close shift and count stock'}
@@ -239,7 +239,7 @@ export default function ShiftPage() {
                 {lastNote.message}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                — {team.find((t) => t.id === lastNote.author_id)?.full_name ?? 'Unknown'}, {formatDateTime(lastNote.created_at)}
+                {team.find((t) => t.id === lastNote.author_id)?.full_name ?? 'Unknown'}, {formatDateTime(lastNote.created_at)}
               </Typography>
               {lastNote.author_id === staff?.id ? (
                 <Chip size="small" icon={<TaskAltIcon />} label="Your note" variant="outlined" />
@@ -274,7 +274,7 @@ export default function ShiftPage() {
       )}
 
       <Dialog open={closeOpen} onClose={() => !busy && setCloseOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Close shift — count remaining stock</DialogTitle>
+        <DialogTitle>Close shift: count remaining stock</DialogTitle>
         <DialogContent>
           {closeError && (
             <Alert severity="error" sx={{ mb: 2, mt: 1 }}>
@@ -293,7 +293,7 @@ export default function ShiftPage() {
                   {c.inactive && <Chip size="small" label="No longer on the menu" variant="outlined" />}
                 </Box>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                  Produced {formatQty(c.produced)} · Replenished {formatQty(c.replenished)} · Wasted {formatQty(c.wasted)} — expected on hand: {formatQty(Math.max(c.expected, 0))} {c.unit}
+                  Produced {formatQty(c.produced)} · Replenished {formatQty(c.replenished)} · Wasted {formatQty(c.wasted)}. Expected on hand: {formatQty(Math.max(c.expected, 0))} {c.unit}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
@@ -310,7 +310,7 @@ export default function ShiftPage() {
                     }}
                   />
                   <Chip
-                    label={diff === null ? '—' : diff === 0 ? 'Reconciled' : `${diff > 0 ? '+' : ''}${formatQty(diff)} diff`}
+                    label={diff === null ? '' : diff === 0 ? 'Reconciled' : `${diff > 0 ? '+' : ''}${formatQty(diff)} diff`}
                     color={diff === null ? 'default' : diff === 0 ? 'success' : 'warning'}
                     size="small"
                     sx={{ alignSelf: 'center' }}
@@ -343,7 +343,7 @@ export default function ShiftPage() {
             minRows={3}
             margin="normal"
             inputProps={{ maxLength: 2000 }}
-            helperText={`Signed by ${staff?.full_name ?? 'you'} — the next person must acknowledge it`}
+            helperText={`Signed by ${staff?.full_name ?? 'you'}. The next person must acknowledge it`}
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -437,7 +437,7 @@ function CloseoutRow({ closeout }: { closeout: ShiftCloseout }) {
         />
       </Box>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-        Produced {formatQty(closeout.produced)} + Replenished {formatQty(closeout.replenished)} − Wasted {formatQty(closeout.wasted)} → on hand {formatQty(closeout.remaining)} {item.unit}; unaccounted for {formatQty(closeout.sold_estimate)} {item.unit}
+        Produced {formatQty(closeout.produced)} + Replenished {formatQty(closeout.replenished)} minus Wasted {formatQty(closeout.wasted)} equals on hand {formatQty(closeout.remaining)} {item.unit}; unaccounted for {formatQty(closeout.sold_estimate)} {item.unit}
       </Typography>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
         Unaccounted = sold or missing, as counted at close. It is not a verified sale.

@@ -129,7 +129,7 @@ export default function ItemsPage() {
       {!loading && !error && items.length === 0 && (
         <EmptyState
           title="No items yet"
-          description="Add the things you bake — breads, pastries, drinks — so staff can record production and waste against them."
+          description="Add the things you bake, such as breads, pastries and drinks, so staff can record production and waste against them."
           action={
             <Button variant="contained" startIcon={<AddIcon />} onClick={openDialog}>
               Add first item
@@ -165,7 +165,7 @@ export default function ItemsPage() {
           {inactiveItems.length > 0 && (
             <>
               <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mt: 3, mb: 1 }}>
-                Inactive — hidden from new records
+                Inactive, hidden from new records
               </Typography>
               <List sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', py: 0, overflow: 'hidden' }}>
                 {inactiveItems.map((item) => (

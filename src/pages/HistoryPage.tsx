@@ -85,7 +85,7 @@ export default function HistoryPage() {
         History and reports
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Every number here is summed directly from recorded production, replenishment and waste records for the selected period. Sales are not shown because quantity sold can only be known after a shift is counted and closed — see the shift closeouts for that.
+        Every number here is summed directly from recorded production, replenishment and waste records for the selected period. Sales are not shown because quantity sold can only be known after a shift is counted and closed. See the shift closeouts for that.
       </Typography>
 
       <ToggleButtonGroup
