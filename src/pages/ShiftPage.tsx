@@ -204,9 +204,14 @@ export default function ShiftPage() {
         <>
           {openShift ? (
             <Paper elevation={0} sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 4, mb: 3 }}>
-              <Chip icon={<PlayArrowIcon />} label="Shift open" color="success" sx={{ mb: 2 }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Chip icon={<PlayArrowIcon />} label="Shift open" color="success" />
+                <Typography variant="caption" color="text.secondary">
+                  Opened by {team.find((t) => t.id === openShift.opened_by)?.full_name ?? 'Unknown'}
+                </Typography>
+              </Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Opened {formatDateTime(openShift.opened_at)}
+                {formatDateTime(openShift.opened_at)} — everything logged since then will be reconciled at close.
               </Typography>
               <Button fullWidth variant="contained" size="large" onClick={() => void startClose()} disabled={busy}>
                 {busy ? 'Preparing…' : 'Close shift & count stock'}
@@ -214,8 +219,9 @@ export default function ShiftPage() {
             </Paper>
           ) : (
             <Paper elevation={0} sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 4, mb: 3 }}>
+              <Chip label="No shift open" variant="outlined" sx={{ mb: 1.5 }} />
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                No shift is open right now.
+                Open a shift at the start of work so batches, waste and replenishments are grouped to it.
               </Typography>
               <Button fullWidth variant="contained" size="large" startIcon={<PlayArrowIcon />} onClick={() => void onOpenShift()} disabled={busy}>
                 {busy ? 'Opening…' : 'Open a shift'}
@@ -260,7 +266,7 @@ export default function ShiftPage() {
           ) : (
             <List sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', py: 0, overflow: 'hidden' }}>
               {pastShifts.slice(0, 8).map((s) => (
-                <ShiftRow key={s.id} shift={s} />
+                <ShiftRow key={s.id} shift={s} team={team} />
               ))}
             </List>
           )}
@@ -359,7 +365,7 @@ export default function ShiftPage() {
   );
 }
 
-function ShiftRow({ shift }: { shift: Shift }) {
+function ShiftRow({ shift, team }: { shift: Shift; team: { id: string; full_name: string }[] }) {
   const [closeouts, setCloseouts] = useState<ShiftCloseout[] | null>(null);
   const [expanded, setExpanded] = useState(false);
 
@@ -384,8 +390,8 @@ function ShiftRow({ shift }: { shift: Shift }) {
         primary={`Closed ${formatDateTime(shift.closed_at ?? shift.opened_at)}`}
         secondary={
           closeouts
-            ? `Unaccounted for: ${formatQty(totalUnaccounted)} · ${fullyReconciled ? 'all items reconciled' : `${diffs} unreconciled item(s)`}`
-            : 'Tap to see the closeout report'
+            ? `Closed by ${team.find((t) => t.id === shift.closed_by)?.full_name ?? 'Unknown'} · Unaccounted for: ${formatQty(totalUnaccounted)} · ${fullyReconciled ? 'all items reconciled' : `${diffs} unreconciled item(s)`}`
+            : `Closed by ${team.find((t) => t.id === shift.closed_by)?.full_name ?? 'Unknown'} · Tap to see the closeout report`
         }
         slotProps={{ primary: { fontWeight: 500 } }}
       />

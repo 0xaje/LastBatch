@@ -17,6 +17,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
+import Paper from '@mui/material/Paper';
 import MenuItemMUI from '@mui/material/MenuItem';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -35,6 +36,7 @@ interface InvitationRow {
   status: string;
   expires_at: string;
   created_at: string;
+  expired: boolean;
 }
 
 export default function StaffPage() {
@@ -67,7 +69,15 @@ export default function StaffPage() {
     ]);
     if (teamErr) setError(friendlyDbError(teamErr.message));
     else setTeam((teamData ?? []) as StaffMember[]);
-    if (!invErr && invData) setInvitations(invData as InvitationRow[]);
+    if (!invErr && invData) {
+      const now = Date.now();
+      setInvitations(
+        (invData as Omit<InvitationRow, 'expired'>[]).map((inv) => ({
+          ...inv,
+          expired: new Date(inv.expires_at).getTime() < now,
+        })),
+      );
+    }
     setLoading(false);
   }, []);
 
@@ -125,8 +135,13 @@ export default function StaffPage() {
     }
   };
 
-  const statusChip = (s: string) => {
-    if (s === 'pending') return <Chip label="Pending" size="small" color="warning" variant="outlined" />;
+  const statusChip = (s: string, expired: boolean) => {
+    if (s === 'pending') {
+      if (expired) {
+        return <Chip label="Expired" size="small" color="default" variant="outlined" />;
+      }
+      return <Chip label="Pending" size="small" color="warning" variant="outlined" />;
+    }
     if (s === 'used') return <Chip label="Used" size="small" color="success" variant="outlined" />;
     return <Chip label="Revoked" size="small" color="default" variant="outlined" />;
   };
@@ -145,6 +160,11 @@ export default function StaffPage() {
           {workspace.name} · {team.length} member{team.length === 1 ? '' : 's'}
         </Typography>
       )}
+      {isManager && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Managers can invite staff, change roles and close shifts. Staff can record batches, waste, replenishments and acknowledge handovers.
+        </Typography>
+      )}
 
       {loading && <PageLoader />}
       {!loading && error && <ErrorState message={error} onRetry={() => void load()} />}
@@ -155,6 +175,17 @@ export default function StaffPage() {
             <Button variant="contained" startIcon={<PersonAddAlt1Icon />} onClick={() => setInviteOpen(true)} sx={{ mb: 3 }}>
               Invite staff
             </Button>
+          )}
+
+          {isManager && (
+            <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: 'transparent' }}>
+              <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                How staff join
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Create an invitation, share the one-time code with your team member, and they enter it on their setup screen after signing up. Each code works once, optionally only for one email address, and expires automatically.
+              </Typography>
+            </Paper>
           )}
 
           {team.length === 0 ? (
@@ -220,7 +251,7 @@ export default function StaffPage() {
                   <ListItem
                     key={inv.id}
                     secondaryAction={
-                      inv.status === 'pending' ? (
+                      inv.status === 'pending' && !inv.expired ? (
                         <Button size="small" color="error" onClick={() => void onRevoke(inv)}>
                           Revoke
                         </Button>
@@ -233,11 +264,13 @@ export default function StaffPage() {
                         <Typography variant="body2" component="code" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
                           {inv.code.slice(0, 6)}…{inv.code.slice(-4)}
                         </Typography>
-                        {statusChip(inv.status)}
+                        {statusChip(inv.status, inv.expired)}
                       </Box>
                       <Typography variant="caption" color="text.secondary">
                         {inv.target_email ? `For ${inv.target_email} · ` : 'Open code · '}
-                        {new Date(inv.expires_at).toLocaleString()}
+                        {inv.status === 'pending' && inv.expired
+                          ? `Expired ${new Date(inv.expires_at).toLocaleString()}`
+                          : `Expires ${new Date(inv.expires_at).toLocaleString()}`}
                       </Typography>
                     </Box>
                   </ListItem>

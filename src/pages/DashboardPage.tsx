@@ -3,6 +3,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -17,18 +18,39 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import AddIcon from '@mui/icons-material/Add';
 import AddTaskIcon from '@mui/icons-material/AddTask';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import ForumIcon from '@mui/icons-material/Forum';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
-import type { Batch, FoodItem } from '../lib/types';
+import type { Batch, FoodItem, Shift } from '../lib/types';
 import { EmptyState, ErrorState, PageLoader } from '../components/States';
 import { formatQty, formatTime, friendlyDbError, newClientId, relativeDay } from '../lib/format';
 
+interface LatestNote {
+  id: string;
+  message: string;
+  author_id: string;
+  created_at: string;
+  acks: { acknowledged_by: string }[];
+}
+
+interface Discrepancy {
+  item: string;
+  qty: number;
+  unit: string;
+}
+
 export default function DashboardPage() {
-  const { staff } = useAuth();
+  const { staff, workspace } = useAuth();
   const navigate = useNavigate();
   const [items, setItems] = useState<FoodItem[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [openShift, setOpenShift] = useState<Shift | null>(null);
+  const [note, setNote] = useState<LatestNote | null>(null);
+  const [discrepancies, setDiscrepancies] = useState<Discrepancy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,21 +65,35 @@ export default function DashboardPage() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const [itemsRes, batchesRes] = await Promise.all([
+    const [itemsRes, batchesRes, shiftsRes, notesRes] = await Promise.all([
       supabase.from('food_items').select('*').eq('is_active', true).order('name'),
       supabase
         .from('batches')
         .select('*')
         .order('produced_at', { ascending: false })
         .limit(15),
+      supabase.from('shifts').select('*').order('opened_at', { ascending: false }).limit(1),
+      supabase
+        .from('handover_notes')
+        .select('id, message, author_id, created_at, acks:handover_acknowledgments(acknowledged_by)')
+        .order('created_at', { ascending: false })
+        .limit(1),
     ]);
     if (itemsRes.error) {
       setError(friendlyDbError(itemsRes.error.message));
     } else if (batchesRes.error) {
       setError(friendlyDbError(batchesRes.error.message));
+    } else if (shiftsRes.error) {
+      setError(friendlyDbError(shiftsRes.error.message));
+    } else if (notesRes.error) {
+      setError(friendlyDbError(notesRes.error.message));
     } else {
       setItems((itemsRes.data ?? []) as FoodItem[]);
       setBatches((batchesRes.data ?? []) as Batch[]);
+      const shifts = (shiftsRes.data ?? []) as Shift[];
+      setOpenShift(shifts.find((s) => s.status === 'open') ?? null);
+      const notes = (notesRes.data ?? []) as LatestNote[];
+      setNote(notes[0] ?? null);
     }
     setLoading(false);
   }, []);
@@ -65,6 +101,63 @@ export default function DashboardPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Discrepancies from the most recent closed shift, only when no shift is open.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (openShift) {
+        setDiscrepancies([]);
+        return;
+      }
+      const { data: latestClosed } = await supabase
+        .from('shifts')
+        .select('id')
+        .eq('status', 'closed')
+        .order('closed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (!latestClosed) {
+        setDiscrepancies([]);
+        return;
+      }
+      const { data: closeouts, error: coErr } = await supabase
+        .from('shift_closeouts')
+        .select('item_id, difference')
+        .eq('shift_id', latestClosed.id);
+      if (cancelled) return;
+      if (coErr || !closeouts) {
+        setDiscrepancies([]);
+        return;
+      }
+      const diffRows = (closeouts as { item_id: string; difference: number }[]).filter(
+        (c) => Number(c.difference) !== 0,
+      );
+      if (diffRows.length === 0) {
+        setDiscrepancies([]);
+        return;
+      }
+      const { data: itemsById } = await supabase
+        .from('food_items')
+        .select('id, name, unit')
+        .in('id', diffRows.map((r) => r.item_id));
+      if (cancelled) return;
+      setDiscrepancies(
+        diffRows.map((r) => {
+          const item = (itemsById ?? []).find((i) => i.id === r.item_id);
+          return {
+            item: item?.name ?? 'Item',
+            qty: Number(r.difference),
+            unit: item?.unit ?? '',
+          };
+        }),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openShift]);
 
   const openDialog = () => {
     setItemId(items[0]?.id ?? '');
@@ -121,35 +214,103 @@ export default function DashboardPage() {
 
   const selectedItem = items.find((i) => i.id === itemId);
 
+  const pendingAckForMe = Boolean(
+    note && note.author_id !== staff?.id && !note.acks.some((a) => a.acknowledged_by === staff?.id),
+  );
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  }, []);
+
   return (
     <Box sx={{ p: 2, maxWidth: 640, mx: 'auto' }}>
+      <Typography variant="body2" color="text.secondary">
+        {workspace?.name}
+      </Typography>
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-        Hi {staff?.full_name.split(' ')[0]}
+        {greeting}, {staff?.full_name.split(' ')[0]}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        What did you just bake?
+        {openShift ? 'A shift is open.' : 'No shift is open.'}
       </Typography>
 
-      <Button
-        fullWidth
-        variant="contained"
-        size="large"
-        startIcon={<AddTaskIcon />}
-        onClick={openDialog}
-        disabled={items.length === 0 && !loading}
-        sx={{ mb: 1, py: 1.5, borderRadius: 3 }}
-      >
-        Log a production batch
-      </Button>
-      <Button
-        fullWidth
-        variant="outlined"
-        size="large"
-        onClick={() => navigate('/shift')}
-        sx={{ mb: 3, py: 1.5, borderRadius: 3 }}
-      >
-        Shift & handover
-      </Button>
+      {/* Pending handover acknowledgment */}
+      {pendingAckForMe && note && (
+        <Alert
+          icon={<ForumIcon />}
+          severity="warning"
+          sx={{ mb: 3 }}
+          action={
+            <Button color="inherit" size="small" component={RouterLink} to="/shift">
+              View
+            </Button>
+          }
+        >
+          A handover note is waiting for your acknowledgment.
+        </Alert>
+      )}
+
+      {/* Unresolved discrepancies from the last closeout */}
+      {!loading && !error && discrepancies.length > 0 && (
+        <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <WarningAmberIcon fontSize="small" sx={{ color: 'warning.main' }} />
+            <Typography variant="subtitle2">Unresolved discrepancies — last closeout</Typography>
+          </Box>
+          <List disablePadding>
+            {discrepancies.map((d, i) => (
+              <ListItem key={`${d.item}-${i}`} disableGutters>
+                <ListItemText
+                  primary={d.item}
+                  secondary={`${d.qty > 0 ? '+' : ''}${formatQty(d.qty)} ${d.unit} unaccounted for`.trim()}
+                  slotProps={{ primary: { fontWeight: 500 } }}
+                />
+              </ListItem>
+            ))}
+          </List>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+            Recorded at the last shift close. The full report is on the shift page.
+          </Typography>
+        </Paper>
+      )}
+
+      {/* Quick actions */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5, mb: 3 }}>
+        <Button
+          fullWidth
+          variant="contained"
+          size="large"
+          startIcon={<AddTaskIcon />}
+          onClick={openDialog}
+          disabled={items.length === 0 && !loading}
+          sx={{ py: 1.5, borderRadius: 3 }}
+        >
+          Log a batch
+        </Button>
+        <Button
+          fullWidth
+          variant="outlined"
+          size="large"
+          startIcon={<DeleteOutlineIcon />}
+          onClick={() => navigate('/log-waste')}
+          sx={{ py: 1.5, borderRadius: 3 }}
+        >
+          Log waste
+        </Button>
+        <Button
+          fullWidth
+          variant="outlined"
+          size="large"
+          startIcon={<PlayArrowIcon />}
+          onClick={() => navigate('/shift')}
+          sx={{ py: 1.5, borderRadius: 3, gridColumn: { sm: '1 / -1' } }}
+        >
+          Shift &amp; handover
+        </Button>
+      </Box>
 
       {items.length === 0 && !loading && (
         <Alert severity="info" sx={{ mb: 3 }}>
