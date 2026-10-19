@@ -162,9 +162,12 @@ export default function DashboardPage() {
   const openDialog = () => {
     setItemId(items[0]?.id ?? '');
     setQuantity('');
+    // Keep second precision: close_shift attributes batches by
+    // produced_at >= shift.opened_at, and shifts can open mid-minute, so
+    // truncating to the minute could default the time before the shift opened.
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    setProducedAt(now.toISOString().slice(0, 16));
+    setProducedAt(now.toISOString().slice(0, 19));
     setFormError(null);
     setDialogOpen(true);
   };
@@ -402,6 +405,7 @@ export default function DashboardPage() {
             fullWidth
             margin="normal"
             required
+            inputProps={{ step: 1 }}
           />
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
             Recorded by {staff?.full_name}
