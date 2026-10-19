@@ -58,6 +58,7 @@ export default function DashboardPage() {
   const [itemId, setItemId] = useState('');
   const [quantity, setQuantity] = useState('');
   const [producedAt, setProducedAt] = useState('');
+  const [producedAtEdited, setProducedAtEdited] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -168,6 +169,7 @@ export default function DashboardPage() {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     setProducedAt(now.toISOString().slice(0, 19));
+    setProducedAtEdited(false);
     setFormError(null);
     setDialogOpen(true);
   };
@@ -186,12 +188,16 @@ export default function DashboardPage() {
       setFormError('Please choose a time.');
       return;
     }
+    // A dialog can stay open while a shift starts. An untouched default
+    // means 'now', not the potentially stale time the dialog opened.
+    // Preserve explicitly edited historical production times unchanged.
+    const effectiveProducedAt = producedAtEdited ? new Date(producedAt) : new Date();
     setFormError(null);
     setSaving(true);
     const { error: err } = await supabase.from('batches').insert({
       item_id: itemId,
       quantity: qty,
-      produced_at: new Date(producedAt).toISOString(),
+      produced_at: effectiveProducedAt.toISOString(),
       client_id: newClientId(),
     });
     setSaving(false);
@@ -413,7 +419,8 @@ export default function DashboardPage() {
             label="Produced at"
             type="datetime-local"
             value={producedAt}
-            onChange={(e) => setProducedAt(e.target.value)}
+            onChange={(e) => { setProducedAt(e.target.value); setProducedAtEdited(true); }}
+            helperText={producedAtEdited ? 'Using your selected production time.' : 'Defaults to now when saved. Edit only if recording a past batch.'}
             fullWidth
             margin="normal"
             required
