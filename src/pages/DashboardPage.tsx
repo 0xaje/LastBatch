@@ -229,7 +229,6 @@ export default function DashboardPage() {
     }
     return null;
   }, [openShift, producedAt]);
-
   const pendingAckForMe = Boolean(
     note && note.author_id !== staff?.id && !note.acks.some((a) => a.acknowledged_by === staff?.id),
   );
