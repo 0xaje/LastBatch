@@ -28,7 +28,7 @@ interface InvitationPreview {
 }
 
 export default function SetupPage() {
-  const { session, staff, workspace, loading, refreshWorkspace, signOut } = useAuth();
+  const { session, staff, workspace, loading, workspaceError, refreshWorkspace, signOut } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>('choose');
   const [workspaceName, setWorkspaceName] = useState('');
@@ -52,6 +52,12 @@ export default function SetupPage() {
   }
 
   if (!session) return <Navigate to="/sign-in" replace />;
+  if (workspaceError) return (
+    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, p: 3 }}>
+      <Alert severity="error">{workspaceError}</Alert>
+      <Button variant="contained" onClick={() => void refreshWorkspace()}>Retry workspace lookup</Button>
+    </Box>
+  );
   if (staff && workspace) return <Navigate to="/" replace />;
 
   const validate = (needWorkspaceName: boolean): string | null => {
