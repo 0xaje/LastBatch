@@ -34,8 +34,9 @@ function AuthRedirect({ children }: { children: React.ReactNode }) {
 }
 
 function LandingOrApp() {
-  const { session, staff, workspace, loading } = useAuth();
+  const { session, staff, workspace, loading, workspaceError } = useAuth();
   if (loading) return null;
+  if (session && workspaceError) return <WorkspaceLoadFailure />;
   if (session && staff && workspace) return <AppShell />;
   if (session) return <Navigate to="/setup" replace />;
   return <LandingPage />;
