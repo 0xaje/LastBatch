@@ -1,14 +1,13 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { useAuth } from '../lib/auth';
-import { supabase } from '../lib/supabase';
 
 export default function ProtectedRoutes({ children }: { children: ReactNode }) {
-  const { session, staff, workspace, loading, refreshWorkspace } = useAuth();
+  const { session, staff, workspace, loading, refreshWorkspace, workspaceError } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -22,6 +21,10 @@ export default function ProtectedRoutes({ children }: { children: ReactNode }) {
 
   if (!session) return <Navigate to="/sign-in" replace state={{ from: location.pathname }} />;
 
+  if (workspaceError) {
+    return <WorkspaceMissing onRefresh={() => void refreshWorkspace()} error={workspaceError} />;
+  }
+
   if (!staff) {
     return <Navigate to="/setup" replace />;
   }
@@ -33,44 +36,15 @@ export default function ProtectedRoutes({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-function WorkspaceMissing({ onRefresh }: { onRefresh: () => void }) {
-  const [checking, setChecking] = useState(true);
-  const [hasWorkspace, setHasWorkspace] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase.from('workspaces').select('id, name, created_by, created_at').limit(1).maybeSingle();
-      setHasWorkspace(Boolean(data));
-      setChecking(false);
-    })();
-  }, []);
-
-  if (checking) {
-    return (
-      <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default' }}>
-        <CircularProgress sx={{ color: 'primary.main' }} />
-      </Box>
-    );
-  }
-
-  if (!hasWorkspace) {
-    // No workspace exists yet: this user should create one
-    return <Navigate to="/setup" replace />;
-  }
-
+function WorkspaceMissing({ onRefresh, error }: { onRefresh: () => void; error?: string }) {
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3, bgcolor: 'background.default' }}>
-      <Box sx={{ textAlign: 'center', maxWidth: 380 }}>
-        <Typography variant="h6" sx={{ mb: 1 }}>Workspace unavailable</Typography>
+    <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+      <Box sx={{ textAlign: 'center', maxWidth: 420 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>Workspace unavailable</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Your account is not connected to a workspace yet. If your manager created one, you can join from the setup screen.
+          {error ?? 'Your workspace could not be loaded. Please retry rather than creating another workspace.'}
         </Typography>
-        <Button variant="contained" onClick={onRefresh} sx={{ mr: 1 }}>
-          Retry
-        </Button>
-        <Button variant="text" onClick={() => { window.location.href = '/setup'; }}>
-          Go to setup
-        </Button>
+        <Button variant="contained" onClick={onRefresh}>Retry workspace lookup</Button>
       </Box>
     </Box>
   );
