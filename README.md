@@ -4,6 +4,14 @@
 
 LastBatch is an operational accountability platform for organizations and teams. It helps teams record daily operations, track stock movements, reconcile differences, and keep responsibilities clear from one shift to the next.
 
+## 🎬 Watch the LastBatch demo
+
+[![Watch the LastBatch product demonstration on YouTube](https://img.youtube.com/vi/BjdxPe38cas/hqdefault.jpg)](https://youtu.be/BjdxPe38cas)
+
+**[▶ Watch the full product walkthrough on YouTube](https://youtu.be/BjdxPe38cas)** · **[Try the live app](https://lastbatch-bakery-saa-play.bolt.host/)**
+
+The demo shows a real two-shift workflow: the first shift closes with **47 expected, 30 counted, and 17 unaccounted for**; staff acknowledge the handover; the next shift carries forward **30** and reconciles **48 expected against 48 counted**. These are demonstration records in the working app—not claims of actual customer activity.
+
 Bakeries and cafés are the first use case: production runs, replenishments, waste, and end-of-shift counts. The underlying model (record activity as it happens, reconcile it against what is actually on hand, and require written explanations for gaps) applies to any team that moves physical stock through a shift.
 
 ## Why it exists
